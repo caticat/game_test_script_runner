@@ -4,7 +4,7 @@ import queue
 import struct
 import time
 
-from utils.proto_encode import Codec
+from utils.protocol_codec import Codec
 
 class Packet:
 
@@ -107,7 +107,7 @@ class SocketClient:
 
     def _read_loop(self):
         decode_fun = Packet.decode_gate if self.dst_gate else Packet.decode_login
-        
+
         while self.running.is_set():
             try:
                 data = self.socket.recv(4096)

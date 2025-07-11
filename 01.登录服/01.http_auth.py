@@ -1,7 +1,10 @@
 # 测试登录认证
 
-from utils.print_dict import print_dict
-from utils.login_poster import send_to_login
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from utils.utils import Utils
 
 # 认证
 def auth():
@@ -9,8 +12,8 @@ def auth():
         "Channel": "dev",
         "Code": "q1",
     }
-    result = send_to_login("auth_step", payload)
-    print_dict(result, "返回结果:")
+    result = Utils.send_to_login("auth_step", payload)
+    Utils.print_dict(result, "返回结果:")
     return result
 
 # 选服
@@ -24,8 +27,8 @@ def selectArea(result_auth):
         "AreaId": 1,
         "LoginToken": result_auth["LoginToken"],
     }
-    result = send_to_login("select_area", payload)
-    print_dict(result, "返回结果:")
+    result = Utils.send_to_login("select_area", payload)
+    Utils.print_dict(result, "返回结果:")
 
 
 # 主函数

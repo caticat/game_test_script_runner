@@ -5,3 +5,14 @@ login:
 gate:
   host: "127.0.0.1"
   port: 5001
+
+# Proto文件路径配置
+proto_path: "Q:/kof/dev/proto_python"
+
+# 数据库配置（如果需要）
+# database:
+#   host: "127.0.0.1"
+#   port: 3306
+#   username: "root"
+#   password: "password"
+#   database: "game_db"
