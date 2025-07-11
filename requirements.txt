@@ -1,0 +1,10 @@
+certifi==2025.4.26
+charset-normalizer==3.4.2
+idna==3.10
+mysql-connector-python==9.3.0
+protobuf==6.30.0rc2
+PyYAML==6.0.2
+requests==2.32.3
+setuptools==78.1.1
+urllib3==2.4.0
+wheel==0.45.1

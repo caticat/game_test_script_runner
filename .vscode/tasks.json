@@ -1,0 +1,16 @@
+{
+    // 使用 VS Code 任务运行 tools/gen_proto.sh 脚本
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "生成 Proto 文件",
+            "type": "shell",
+            "command": "./tools/gen_proto.sh",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        }
+    ]
+}
