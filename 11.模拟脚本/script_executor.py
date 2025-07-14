@@ -39,23 +39,6 @@ class ScriptExecutor:
         # 初始化命令管理器
         self.command_manager = CommandManager(self)
     
-    def _register_commands(self):
-        """注册可用的命令函数"""
-        # HTTP认证相关
-        self.command_functions["auth"] = self._auth_command
-        self.command_functions["select_area"] = self._select_area_command
-        
-        # TCP连接相关
-        self.command_functions["connect_gate"] = self._connect_gate_command
-        self.command_functions["connect_login"] = self._connect_login_command
-        
-        # 游戏服相关
-        self.command_functions["login"] = self._login_command
-        
-        # 工具函数
-        self.command_functions["sleep"] = self._sleep_command
-        self.command_functions["print"] = self._print_command
-    
     def _resolve_value(self, value: Any) -> Any:
         """解析参数值，支持从之前的返回结果中获取"""
         if isinstance(value, str) and value.startswith("ret["):

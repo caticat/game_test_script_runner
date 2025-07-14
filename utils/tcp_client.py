@@ -76,14 +76,22 @@ class SocketClient:
         self.recv_buffer = b""
         self.handlers = {}
         self.dst_gate = True
+        self.threads = []
 
     def connect(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((self.host, self.port))
         self.socket.settimeout(1.0)
-        threading.Thread(target=self._read_loop, daemon=True).start()
-        threading.Thread(target=self._write_loop, daemon=True).start()
-        threading.Thread(target=self._logic_loop, daemon=True).start()
+        
+        # 创建线程但不设置为daemon
+        read_thread = threading.Thread(target=self._read_loop)
+        write_thread = threading.Thread(target=self._write_loop)
+        logic_thread = threading.Thread(target=self._logic_loop)
+        
+        self.threads = [read_thread, write_thread, logic_thread]
+        
+        for thread in self.threads:
+            thread.start()
 
     def stop(self):
         self.running.clear()
@@ -92,7 +100,16 @@ class SocketClient:
                 self.socket.shutdown(socket.SHUT_RDWR)
             except:
                 pass
-            self.socket.close()
+            try:
+                self.socket.close()
+            except:
+                pass
+            self.socket = None
+        
+        # 等待所有线程结束
+        for thread in self.threads:
+            if thread.is_alive():
+                thread.join(timeout=2.0)  # 最多等待2秒
 
     def send(self, proto_id: int, payload: bytes):
         self.seq += 1
@@ -110,10 +127,11 @@ class SocketClient:
 
         while self.running.is_set():
             try:
+                if not self.socket:
+                    break
                 data = self.socket.recv(4096)
                 if not data:
                     print("[INFO] Connection closed by remote.")
-                    self.stop()
                     break
                 self.recv_buffer += data
                 while True:
@@ -123,22 +141,32 @@ class SocketClient:
                     self.read_queue.put(pkt)
             except socket.timeout:
                 continue
+            except OSError as e:
+                if self.running.is_set():
+                    print(f"[ERROR] Read failed: {e}")
+                break
             except Exception as e:
-                print(f"[ERROR] Read failed: {e}")
-                self.stop()
+                if self.running.is_set():
+                    print(f"[ERROR] Read failed: {e}")
                 break
 
     def _write_loop(self):
         while self.running.is_set():
             try:
                 data = self.write_queue.get(timeout=1)
+                if not self.socket:
+                    break
                 with self.lock:
                     self.socket.sendall(data)
             except queue.Empty:
                 continue
+            except OSError as e:
+                if self.running.is_set():
+                    print(f"[ERROR] Write failed: {e}")
+                break
             except Exception as e:
-                print(f"[ERROR] Write failed: {e}")
-                self.stop()
+                if self.running.is_set():
+                    print(f"[ERROR] Write failed: {e}")
                 break
 
     def _logic_loop(self):
