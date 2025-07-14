@@ -1,6 +1,7 @@
 [
   {
-    "cmd": "connect_gate"
+    "cmd": "connect_gate",
+    "comment": "直接连接网关 - 跳过HTTP认证步骤"
   },
   {
     "cmd": "login",
@@ -9,10 +10,12 @@
     "user_name": "q1",
     "area_id": 1,
     "channel": "dev",
-    "platform": "windows"
+    "platform": "windows",
+    "comment": "直接登录 - 使用预设的签名和角色ID"
   },
   {
     "cmd": "print",
-    "message": "直接登录测试完成"
+    "message": "直接登录测试完成! 登录状态: ret[\"login\"][\"success\"], 角色ID: ret[\"login\"][\"role_id\"]",
+    "comment": "显示登录结果"
   }
 ]

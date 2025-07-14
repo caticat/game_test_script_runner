@@ -2,26 +2,32 @@
   {
     "cmd": "auth",
     "user_name": "q1",
-    "channel": "dev"
+    "channel": "dev",
+    "comment": "步骤1: HTTP认证获取OpenId和LoginToken"
   },
   {
     "cmd": "select_area",
     "open_id": "ret[\"auth\"][\"OpenId\"]",
     "area_id": 1,
-    "login_token": "ret[\"auth\"][\"LoginToken\"]"
+    "login_token": "ret[\"auth\"][\"LoginToken\"]",
+    "comment": "步骤2: 选择游戏区服，获取网关信息和签名"
   },
   {
-    "cmd": "connect_gate"
+    "cmd": "connect_gate",
+    "comment": "步骤3: 连接到游戏网关"
   },
   {
-    "cmd": "login"
+    "cmd": "login",
+    "comment": "步骤4: 发送登录请求到游戏服"
   },
   {
     "cmd": "sleep",
-    "seconds": 2.0
+    "seconds": 2.0,
+    "comment": "步骤5: 等待2秒，确保登录完成"
   },
   {
     "cmd": "print",
-    "message": "完整登录流程测试完成!"
+    "message": "完整登录流程测试完成! 角色ID: ret[\"login\"][\"role_id\"], 账号: ret[\"login\"][\"account\"]",
+    "comment": "步骤6: 显示登录结果信息"
   }
 ]

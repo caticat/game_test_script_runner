@@ -142,8 +142,13 @@ class ScriptExecutor:
                 params = script_dict.copy()
                 del params["cmd"]
                 timeout = params.pop("timeout", 30)
+                comment = params.pop("comment", None)  # 提取注释字段，不传递给命令
                 
                 command = ScriptCommand(cmd=cmd, params=params, timeout=timeout)
+                
+                # 显示注释（如果有）
+                if comment:
+                    print(f"💬 {comment}")
                 
                 print(f"🔄 [{i}/{len(scripts)}] 执行命令: {cmd}")
                 
@@ -153,6 +158,12 @@ class ScriptExecutor:
                 
                 # 执行命令
                 result = await self._execute_command(command, resolved_params)
+                
+                # 对于需要等待应答的命令，使用应答处理器设置的结果
+                if command.cmd in ["auth", "select_area", "login"]:
+                    final_result = self.results.get(command.cmd)
+                    if final_result is not None:
+                        result = final_result
                 
                 # 保存结果
                 self.results[cmd] = result
@@ -346,7 +357,8 @@ class ScriptExecutor:
         self.current_client.send(login_id, buff)
         print(f"📤 发送登录请求: role_id={role_id}, user_name={user_name}")
         
-        return {"sent": True, "role_id": role_id, "user_name": user_name}
+        # 不返回临时结果，等待登录应答处理器设置真正的结果
+        return None
     
     def _login_ack_handler(self, seq: int, payload: bytes):
         """登录应答处理器"""
@@ -387,9 +399,51 @@ class ScriptExecutor:
     
     def _print_command(self, message: str = "", **kwargs) -> Dict[str, Any]:
         """打印命令"""
-        print(f"📢 {message}")
-        return {"printed": message}
+        # 解析message中的返回值引用
+        resolved_message = self._resolve_message_content(message)
+        print(f"📢 {resolved_message}")
+        return {"printed": resolved_message}
     
+    def _resolve_message_content(self, message: str) -> str:
+        """解析字符串中的返回值引用"""
+        import re
+        
+        # 使用正则表达式找到所有的 ret["xxx"]["yyy"] 模式
+        pattern = r'ret\["([^"]+)"\]\["([^"]+)"\]'
+        
+        def replace_func(match):
+            cmd_name = match.group(1)
+            field_name = match.group(2)
+            
+            result = self.results.get(cmd_name)
+            if result is None:
+                return f"[命令'{cmd_name}'结果不存在]"
+            
+            if isinstance(result, dict):
+                value = result.get(field_name)
+                if value is None:
+                    return f"[字段'{field_name}'不存在]"
+                return str(value)
+            else:
+                return f"[命令'{cmd_name}'结果不是字典]"
+        
+        # 替换所有匹配的部分
+        resolved = re.sub(pattern, replace_func, message)
+        
+        # 也处理简单的 ret["xxx"] 模式（只有命令名，没有字段）
+        simple_pattern = r'ret\["([^"]+)"\](?!\[)'
+        
+        def simple_replace_func(match):
+            cmd_name = match.group(1)
+            result = self.results.get(cmd_name)
+            if result is None:
+                return f"[命令'{cmd_name}'结果不存在]"
+            return str(result)
+        
+        resolved = re.sub(simple_pattern, simple_replace_func, resolved)
+        
+        return resolved
+
     def close(self):
         """关闭连接"""
         if self.current_client:

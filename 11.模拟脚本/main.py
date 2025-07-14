@@ -25,9 +25,7 @@ def show_examples():
     examples = {
         "login_flow.json": "完整登录流程 (HTTP认证 → 选服 → 连接网关 → 登录)",
         "auth_only.json": "仅HTTP认证和选服",
-        "direct_login.json": "直接连接并登录 (需要预先获得的signature)",
-        "batch_test.json": "批量测试流程",
-        "auto_params.json": "自动参数获取演示"
+        "direct_login.json": "直接连接并登录 (需要预先获得的signature)"
     }
     
     for filename, description in examples.items():

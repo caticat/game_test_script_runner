@@ -2,16 +2,19 @@
   {
     "cmd": "auth",
     "user_name": "q1",
-    "channel": "dev"
+    "channel": "dev",
+    "comment": "HTTP认证 - 获取OpenId和LoginToken"
   },
   {
     "cmd": "select_area",
     "open_id": "ret[\"auth\"][\"OpenId\"]",
     "area_id": 1,
-    "login_token": "ret[\"auth\"][\"LoginToken\"]"
+    "login_token": "ret[\"auth\"][\"LoginToken\"]",
+    "comment": "选择区服 - 获取网关信息"
   },
   {
     "cmd": "print",
-    "message": "HTTP认证和选服测试完成"
+    "message": "HTTP认证和选服测试完成! OpenId: ret[\"auth\"][\"OpenId\"], 网关: ret[\"select_area\"][\"GateHost\"]",
+    "comment": "显示认证结果"
   }
 ]
