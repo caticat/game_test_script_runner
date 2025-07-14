@@ -58,6 +58,9 @@ class QuickRunner:
             with open(file_path, 'r', encoding='utf-8') as f:
                 scripts = json.load(f)
             
+            # 设置脚本文件的基准目录
+            self.executor.set_script_base_dir(str(file_path))
+            
             print(f"🚀 运行脚本: {filename}")
             results = await self.executor.execute_script(scripts)
             

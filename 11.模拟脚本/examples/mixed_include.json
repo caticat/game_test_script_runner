@@ -1,0 +1,28 @@
+[
+  {
+    "cmd": "print",
+    "message": "=== 开始模块化登录流程 ===",
+    "comment": "显示开始信息"
+  },
+  {
+    "include": "modules/auth_module.json",
+    "comment": "包含认证模块"
+  },
+  {
+    "cmd": "print",
+    "message": "认证完成，准备连接游戏服...",
+    "comment": "中间状态提示"
+  },
+  {
+    "include": [
+      "modules/login_module.json",
+      "modules/post_login.json"
+    ],
+    "comment": "包含登录和后处理模块"
+  },
+  {
+    "cmd": "print",
+    "message": "=== 模块化登录流程完成 ===",
+    "comment": "显示完成信息"
+  }
+]

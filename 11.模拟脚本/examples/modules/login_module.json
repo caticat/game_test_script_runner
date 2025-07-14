@@ -1,0 +1,10 @@
+[
+  {
+    "cmd": "connect_gate",
+    "comment": "连接到游戏网关"
+  },
+  {
+    "cmd": "login",
+    "comment": "发送登录请求到游戏服"
+  }
+]

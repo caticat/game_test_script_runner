@@ -1,0 +1,24 @@
+[
+  {
+    "cmd": "print",
+    "message": "=== 使用include的完整登录流程 ===",
+    "comment": "显示开始信息"
+  },
+  {
+    "include": "modules/auth_module.json",
+    "comment": "步骤1-2: 包含认证模块 - HTTP认证和选服"
+  },
+  {
+    "cmd": "print",
+    "message": "认证完成，OpenId: ret[\"auth\"][\"OpenId\"], 网关: ret[\"select_area\"][\"GateHost\"]",
+    "comment": "显示认证结果"
+  },
+  {
+    "include": "modules/login_module.json", 
+    "comment": "步骤3-4: 包含登录模块 - 连接网关和登录"
+  },
+  {
+    "include": "modules/post_login.json",
+    "comment": "步骤5-6: 包含后处理模块 - 等待和显示结果"
+  }
+]

@@ -1,0 +1,15 @@
+[
+  {
+    "cmd": "auth",
+    "user_name": "q1",
+    "channel": "dev",
+    "comment": "HTTP认证获取OpenId和LoginToken"
+  },
+  {
+    "cmd": "select_area",
+    "open_id": "ret[\"auth\"][\"OpenId\"]",
+    "area_id": 1,
+    "login_token": "ret[\"auth\"][\"LoginToken\"]",
+    "comment": "选择游戏区服，获取网关信息和签名"
+  }
+]

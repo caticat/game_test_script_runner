@@ -1,0 +1,12 @@
+[
+  {
+    "cmd": "sleep",
+    "seconds": 1.0,
+    "comment": "等待处理完成"
+  },
+  {
+    "cmd": "print",
+    "message": "登录成功！角色ID: ret[\"login\"][\"role_id\"], 账号: ret[\"login\"][\"account\"]",
+    "comment": "显示登录结果信息"
+  }
+]

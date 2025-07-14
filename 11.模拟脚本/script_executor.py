@@ -35,6 +35,7 @@ class ScriptExecutor:
         self.waiting_commands: Dict[str, threading.Event] = {}  # 等待命令完成的事件
         self.current_client: Optional[SocketClient] = None
         self.executor = ThreadPoolExecutor(max_workers=1)
+        self.script_base_dir: Optional[str] = None  # 脚本文件的基准目录
         
         # 注册可用的命令函数
         self._register_commands()
@@ -132,11 +133,19 @@ class ScriptExecutor:
     async def execute_script(self, scripts: List[Dict[str, Any]]) -> Dict[str, Any]:
         """执行脚本"""
         print("🚀 开始执行脚本...")
-        print(f"📋 共有 {len(scripts)} 个命令")
+        
+        # 处理include指令，展开包含的文件
+        expanded_scripts = self._process_includes(scripts, self.script_base_dir)
+        
+        print(f"📋 共有 {len(expanded_scripts)} 个命令（包含文件展开后）")
         print("=" * 50)
         
-        for i, script_dict in enumerate(scripts, 1):
+        for i, script_dict in enumerate(expanded_scripts, 1):
             try:
+                # 跳过include指令（已经在_process_includes中处理）
+                if "include" in script_dict:
+                    continue
+                
                 # 解析命令
                 cmd = script_dict["cmd"]
                 params = script_dict.copy()
@@ -150,7 +159,7 @@ class ScriptExecutor:
                 if comment:
                     print(f"💬 {comment}")
                 
-                print(f"🔄 [{i}/{len(scripts)}] 执行命令: {cmd}")
+                print(f"🔄 [{i}/{len(expanded_scripts)}] 执行命令: {cmd}")
                 
                 # 解析参数
                 resolved_params = self._resolve_params(command.params)
@@ -451,6 +460,78 @@ class ScriptExecutor:
             self.current_client = None
         
         self.executor.shutdown(wait=True)
+    
+    def _load_script_file(self, file_path: str, base_dir: str = None) -> List[Dict[str, Any]]:
+        """加载脚本文件"""
+        import json
+        import os
+        
+        # 如果是相对路径，则相对于base_dir或当前脚本文件目录
+        if not os.path.isabs(file_path):
+            if base_dir:
+                file_path = os.path.join(base_dir, file_path)
+            else:
+                # 获取当前脚本文件的目录
+                current_dir = os.path.dirname(os.path.abspath(__file__))
+                file_path = os.path.join(current_dir, file_path)
+        
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            print(f"❌ 脚本文件未找到: {file_path}")
+            return []
+        except json.JSONDecodeError as e:
+            print(f"❌ 脚本文件格式错误: {file_path}, 错误: {e}")
+            return []
+        except Exception as e:
+            print(f"❌ 加载脚本文件失败: {file_path}, 错误: {e}")
+            return []
+
+    def _process_includes(self, scripts: List[Dict[str, Any]], base_dir: str = None) -> List[Dict[str, Any]]:
+        """处理include指令，展开包含的文件"""
+        expanded_scripts = []
+        
+        for script_dict in scripts:
+            # 检查是否有include字段
+            if "include" in script_dict:
+                include_files = script_dict["include"]
+                if isinstance(include_files, str):
+                    include_files = [include_files]
+                
+                # 显示include信息
+                comment = script_dict.get("comment", "")
+                if comment:
+                    print(f"💬 {comment}")
+                
+                print(f"📂 包含文件: {', '.join(include_files)}")
+                
+                # 递归加载并处理每个包含的文件
+                for include_file in include_files:
+                    print(f"🔄 正在加载: {include_file}")
+                    included_scripts = self._load_script_file(include_file, base_dir)
+                    if included_scripts:
+                        # 递归处理包含文件中的include，使用相同的base_dir
+                        processed_scripts = self._process_includes(included_scripts, base_dir)
+                        expanded_scripts.extend(processed_scripts)
+                        print(f"✅ 已包含 {len(processed_scripts)} 个命令从 {include_file}")
+                    else:
+                        print(f"⚠️  文件 {include_file} 为空或加载失败")
+                
+                print("-" * 30)
+            else:
+                # 普通命令，直接添加
+                expanded_scripts.append(script_dict)
+        
+        return expanded_scripts
+
+    def set_script_base_dir(self, script_file_path: str = None):
+        """设置脚本文件的基准目录"""
+        import os
+        if script_file_path:
+            self.script_base_dir = os.path.dirname(os.path.abspath(script_file_path))
+        else:
+            self.script_base_dir = None
 
 # 使用示例
 async def main():
