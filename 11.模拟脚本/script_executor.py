@@ -12,9 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.utils import Utils
-from utils.base_tcp_client import BaseTCPClient
-from utils.tcp_client import SocketClient
-from utils.protocol_codec import Codec
+from commands import CommandManager
 
 external_path = "Q:/kof/dev/proto_python"
 sys.path.append(external_path)
@@ -31,14 +29,13 @@ class ScriptExecutor:
     
     def __init__(self):
         self.results: Dict[str, Any] = {}  # 存储每个命令的返回结果
-        self.command_functions: Dict[str, Callable] = {}  # 命令函数映射
         self.waiting_commands: Dict[str, threading.Event] = {}  # 等待命令完成的事件
-        self.current_client: Optional[SocketClient] = None
+        self.current_client: Optional[Any] = None
         self.executor = ThreadPoolExecutor(max_workers=1)
         self.script_base_dir: Optional[str] = None  # 脚本文件的基准目录
         
-        # 注册可用的命令函数
-        self._register_commands()
+        # 初始化命令管理器
+        self.command_manager = CommandManager(self)
     
     def _register_commands(self):
         """注册可用的命令函数"""
@@ -194,11 +191,6 @@ class ScriptExecutor:
     
     async def _execute_command(self, command: ScriptCommand, params: Dict[str, Any]) -> Any:
         """执行单个命令"""
-        if command.cmd not in self.command_functions:
-            raise ValueError(f"未知命令: {command.cmd}")
-        
-        func = self.command_functions[command.cmd]
-        
         # 创建等待事件
         event = threading.Event()
         self.waiting_commands[command.cmd] = event
@@ -209,7 +201,7 @@ class ScriptExecutor:
             result = await loop.run_in_executor(
                 self.executor, 
                 self._execute_command_sync, 
-                func, 
+                command.cmd,
                 params
             )
             
@@ -227,9 +219,9 @@ class ScriptExecutor:
             if command.cmd in self.waiting_commands:
                 del self.waiting_commands[command.cmd]
     
-    def _execute_command_sync(self, func: Callable, params: Dict[str, Any]) -> Any:
+    def _execute_command_sync(self, cmd: str, params: Dict[str, Any]) -> Any:
         """同步执行命令"""
-        return func(**params)
+        return self.command_manager.execute_command(cmd, **params)
     
     def _complete_command(self, cmd: str, result: Any = None):
         """标记命令完成"""
@@ -239,219 +231,9 @@ class ScriptExecutor:
         if cmd in self.waiting_commands:
             self.waiting_commands[cmd].set()
     
-    # ========== 命令实现 ==========
-    
-    def _auth_command(self, user_name: str = "q1", channel: str = "dev") -> Dict[str, Any]:
-        """HTTP认证命令"""
-        payload = {
-            "Channel": channel,
-            "Code": user_name,
-        }
-        result = Utils.send_to_login("auth_step", payload)
-        self._complete_command("auth", result)
-        return result
-    
-    def _select_area_command(self, open_id: str, area_id: int = 1, login_token: str = "") -> Dict[str, Any]:
-        """选服命令"""
-        payload = {
-            "OpenId": open_id,
-            "AreaId": area_id,
-            "LoginToken": login_token,
-        }
-        result = Utils.send_to_login("select_area", payload)
-        self._complete_command("select_area", result)
-        return result
-    
-    def _connect_gate_command(self, **kwargs) -> Dict[str, Any]:
-        """连接网关"""
-        # 优先从select_area返回值中获取网关信息
-        select_area_result = self.results.get("select_area")
-        if select_area_result and "GateHost" in select_area_result and "GateTcpPort" in select_area_result:
-            host = select_area_result["GateHost"]
-            port = select_area_result["GateTcpPort"]
-        else:
-            # 如果没有select_area结果，使用配置文件中的默认值
-            print("⚠️  未找到select_area返回的网关信息，使用配置文件默认值")
-            from utils.config_manager import config_manager
-            cfg = config_manager.get_config()
-            host = cfg["gate"]["host"]
-            port = cfg["gate"]["port"]
-        
-        self.current_client = SocketClient(host, port)
-        self.current_client.dst_gate = True
-        self.current_client.connect()
-        
-        print(f"✅ 已连接到网关: {host}:{port}")
-        return {"connected": True, "host": host, "port": port}
-    
-    def _connect_login_command(self, **kwargs) -> Dict[str, Any]:
-        """连接登录服"""
-        from utils.config_manager import config_manager
-        cfg = config_manager.get_config()
-        
-        host = cfg["login"]["host"]
-        port = cfg["login"]["port"]
-        
-        self.current_client = SocketClient(host, port)
-        self.current_client.dst_gate = False
-        self.current_client.connect()
-        
-        print(f"✅ 已连接到登录服: {host}:{port}")
-        return {"connected": True, "host": host, "port": port}
-    
-    def _login_command(self, signature: str = "", role_id: int = 0, user_name: str = "", 
-                      area_id: int = 1, channel: str = "dev", platform: str = "windows") -> Dict[str, Any]:
-        """游戏服登录命令"""
-        if not self.current_client:
-            raise ValueError("未连接到服务器，请先执行 connect_gate 或 connect_login")
-        
-        # 如果参数未提供，尝试从之前的命令结果中获取
-        if not signature or not role_id or not user_name:
-            select_area_result = self.results.get("select_area")
-            auth_result = self.results.get("auth")
-            
-            if not signature and select_area_result and "Signature" in select_area_result:
-                signature = select_area_result["Signature"]
-                
-            if not role_id and select_area_result and "RoleId" in select_area_result:
-                role_id = select_area_result["RoleId"]
-                
-            if not user_name and auth_result and "OpenId" in auth_result:
-                user_name = auth_result["OpenId"]
-        
-        # 检查必要参数
-        if not signature:
-            raise ValueError("缺少signature参数，请提供或确保select_area命令已执行")
-        if not role_id:
-            raise ValueError("缺少role_id参数，请提供或确保select_area命令已执行")
-        if not user_name:
-            raise ValueError("缺少user_name参数，请提供或确保auth命令已执行")
-        
-        # 导入协议ID
-        try:
-            from proto_id_pb2 import ProtoId
-            login_id = ProtoId.C2G_Login
-        except ImportError:
-            print("⚠️  无法导入协议ID，使用默认值")
-            login_id = 1  # 默认登录协议ID
-        
-        # 构建登录数据包
-        buff = b''
-        buff += Codec.encode_int32(role_id)
-        buff += Codec.encode_string(user_name)
-        buff += Codec.encode_string(signature)
-        buff += Codec.encode_int32(area_id)
-        buff += Codec.encode_string(channel)
-        buff += Codec.encode_string(platform)
-        buff += Codec.encode_string("DeviceModel")
-        buff += Codec.encode_string("DeviceName")
-        buff += Codec.encode_string("DeviceType")
-        buff += Codec.encode_int32(1)  # ProcessorCount
-        buff += Codec.encode_int32(1)  # ProcessorFrequency
-        buff += Codec.encode_int32(1024*1024*1024*8)  # SystemMemorySize
-        buff += Codec.encode_int32(1024*1024*1024*8)  # GraphicsMemorySize
-        buff += Codec.encode_string("GraphicsDeviceType")
-        buff += Codec.encode_string("GraphicsDeviceName")
-        buff += Codec.encode_int32(1024)  # ScreenWidth
-        buff += Codec.encode_int32(1024)  # ScreenHeight
-        buff += Codec.encode_int32(1)  # WxModelLevel
-        buff += Codec.encode_int32(1)  # WxBenchmarkLevel
-        buff += Codec.encode_int32(1)  # Language
-        buff += Codec.encode_string("localhost")  # ClientIP
-        
-        # 注册登录应答处理器
-        self.current_client.regist_handler(login_id, self._login_ack_handler)
-        
-        # 发送登录请求
-        self.current_client.send(login_id, buff)
-        print(f"📤 发送登录请求: role_id={role_id}, user_name={user_name}")
-        
-        # 不返回临时结果，等待登录应答处理器设置真正的结果
-        return None
-    
-    def _login_ack_handler(self, seq: int, payload: bytes):
-        """登录应答处理器"""
-        try:
-            pos = 0
-            result_id, pos = Codec.decode_int16(payload, pos)
-            
-            if result_id != 0:
-                err_msg, pos = Codec.decode_string(payload, pos)
-                result = {"success": False, "result_id": result_id, "error": err_msg}
-                print(f"❌ 登录失败: {result_id}, 错误: {err_msg}")
-            else:
-                role_id, pos = Codec.decode_int32(payload, pos)
-                account, pos = Codec.decode_string(payload, pos)
-                area_id, pos = Codec.decode_int32(payload, pos)
-                time_zone, pos = Codec.decode_int32(payload, pos)
-                
-                result = {
-                    "success": True,
-                    "role_id": role_id,
-                    "account": account,
-                    "area_id": area_id,
-                    "time_zone": time_zone
-                }
-                print(f"✅ 登录成功: role_id={role_id}, account={account}")
-            
-            self._complete_command("login", result)
-            
-        except Exception as e:
-            print(f"❌ 解析登录应答失败: {e}")
-            self._complete_command("login", {"success": False, "error": str(e)})
-    
-    def _sleep_command(self, seconds: float = 1.0) -> Dict[str, Any]:
-        """睡眠命令"""
-        print(f"😴 睡眠 {seconds} 秒...")
-        time.sleep(seconds)
-        return {"slept": seconds}
-    
-    def _print_command(self, message: str = "", **kwargs) -> Dict[str, Any]:
-        """打印命令"""
-        # 解析message中的返回值引用
-        resolved_message = self._resolve_message_content(message)
-        print(f"📢 {resolved_message}")
-        return {"printed": resolved_message}
-    
-    def _resolve_message_content(self, message: str) -> str:
-        """解析字符串中的返回值引用"""
-        import re
-        
-        # 使用正则表达式找到所有的 ret["xxx"]["yyy"] 模式
-        pattern = r'ret\["([^"]+)"\]\["([^"]+)"\]'
-        
-        def replace_func(match):
-            cmd_name = match.group(1)
-            field_name = match.group(2)
-            
-            result = self.results.get(cmd_name)
-            if result is None:
-                return f"[命令'{cmd_name}'结果不存在]"
-            
-            if isinstance(result, dict):
-                value = result.get(field_name)
-                if value is None:
-                    return f"[字段'{field_name}'不存在]"
-                return str(value)
-            else:
-                return f"[命令'{cmd_name}'结果不是字典]"
-        
-        # 替换所有匹配的部分
-        resolved = re.sub(pattern, replace_func, message)
-        
-        # 也处理简单的 ret["xxx"] 模式（只有命令名，没有字段）
-        simple_pattern = r'ret\["([^"]+)"\](?!\[)'
-        
-        def simple_replace_func(match):
-            cmd_name = match.group(1)
-            result = self.results.get(cmd_name)
-            if result is None:
-                return f"[命令'{cmd_name}'结果不存在]"
-            return str(result)
-        
-        resolved = re.sub(simple_pattern, simple_replace_func, resolved)
-        
-        return resolved
+    def get_available_commands(self) -> Dict[str, str]:
+        """获取所有可用命令的列表"""
+        return self.command_manager.get_available_commands()
 
     def close(self):
         """关闭连接"""
