@@ -9,12 +9,14 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from script_executor import ScriptExecutor
+from utils.config_manager import config_manager
 
 class QuickRunner:
     """快速脚本运行器"""
     
     def __init__(self):
-        self.examples_dir = Path(__file__).parent / "examples"
+        scripts_path = config_manager.get_scripts_path()
+        self.examples_dir = Path(__file__).parent / scripts_path
         self.executor = ScriptExecutor()
     
     def list_examples(self):

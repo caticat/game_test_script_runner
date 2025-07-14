@@ -63,6 +63,11 @@ class ConfigManager:
         return self._config.get("proto_path", 
                                os.getenv("PROTO_PYTHON_PATH", "Q:/kof/dev/proto_python"))
     
+    def get_scripts_path(self) -> str:
+        """获取脚本文件夹路径"""
+        return self._config.get("scripts_path", 
+                               os.getenv("SCRIPTS_PATH", "scripts"))
+    
     def reload_config(self):
         """重新加载配置"""
         self._config = None

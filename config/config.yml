@@ -9,6 +9,9 @@ gate:
 # Proto文件路径配置
 proto_path: "Q:/kof/dev/proto_python"
 
+# 脚本文件夹路径配置
+scripts_path: "scripts"
+
 # 数据库配置（如果需要）
 # database:
 #   host: "127.0.0.1"
