@@ -49,7 +49,12 @@ class QuickRunner:
     
     async def run_script_file(self, filename: str):
         """运行脚本文件"""
-        file_path = self.examples_dir / filename
+        # 支持相对路径和绝对路径
+        if os.path.isabs(filename) or os.path.exists(filename):
+            file_path = Path(filename)
+        else:
+            file_path = self.examples_dir / filename
+            
         if not file_path.exists():
             print(f"❌ 文件 {filename} 不存在")
             return

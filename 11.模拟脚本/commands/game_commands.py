@@ -7,9 +7,10 @@ from utils.protocol_codec import Codec
 import sys
 import os
 
-# 添加proto路径
-external_path = "Q:/kof/dev/proto_python"
-sys.path.append(external_path)
+# 动态获取proto路径并添加到sys.path
+from utils.config_manager import config_manager
+proto_path = config_manager.get_proto_path()
+sys.path.append(proto_path)
 
 class LoginCommand(BaseCommand):
     """游戏服登录命令"""

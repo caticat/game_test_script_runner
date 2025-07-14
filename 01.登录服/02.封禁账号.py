@@ -7,10 +7,12 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.base_tcp_client import BaseTCPClient
 from utils.tcp_client import SocketClient
 from utils.utils import Utils
+from utils.config_manager import config_manager
 from google.protobuf.json_format import MessageToJson
 
-external_path = "Q:/kof/dev/proto_python"
-sys.path.append(external_path)
+# 动态获取proto路径并添加到sys.path
+proto_path = config_manager.get_proto_path()
+sys.path.append(proto_path)
 from proto_id_pb2 import ProtoId
 import login_pb2
 
