@@ -1,0 +1,17 @@
+[
+  {
+    "cmd": "auth",
+    "user_name": "q1",
+    "channel": "dev"
+  },
+  {
+    "cmd": "select_area",
+    "open_id": "ret[\"auth\"][\"OpenId\"]",
+    "area_id": 1,
+    "login_token": "ret[\"auth\"][\"LoginToken\"]"
+  },
+  {
+    "cmd": "print",
+    "message": "HTTP认证和选服测试完成"
+  }
+]

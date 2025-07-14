@@ -1,0 +1,27 @@
+[
+  {
+    "cmd": "auth",
+    "user_name": "q1",
+    "channel": "dev"
+  },
+  {
+    "cmd": "select_area",
+    "open_id": "ret[\"auth\"][\"OpenId\"]",
+    "area_id": 1,
+    "login_token": "ret[\"auth\"][\"LoginToken\"]"
+  },
+  {
+    "cmd": "connect_gate"
+  },
+  {
+    "cmd": "login"
+  },
+  {
+    "cmd": "sleep",
+    "seconds": 2.0
+  },
+  {
+    "cmd": "print",
+    "message": "完整登录流程测试完成!"
+  }
+]

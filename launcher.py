@@ -30,6 +30,11 @@ class TestToolLauncher:
                 "name": "登录测试",
                 "file": "02.网关/01.登录.py",
                 "description": "游戏服TCP连接和登录测试"
+            },
+            "5": {
+                "name": "模拟脚本工具",
+                "file": "11.模拟脚本/main.py",
+                "description": "按顺序执行测试命令，支持参数引用和异步等待"
             }
         }
     
@@ -81,7 +86,7 @@ class TestToolLauncher:
             self.show_menu()
             
             try:
-                choice = input("请选择要运行的工具 (0-4): ").strip()
+                choice = input("请选择要运行的工具 (0-5): ").strip()
                 
                 if choice == "0":
                     print("再见！")

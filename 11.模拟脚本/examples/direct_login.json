@@ -1,0 +1,18 @@
+[
+  {
+    "cmd": "connect_gate"
+  },
+  {
+    "cmd": "login",
+    "signature": "SSdRaix1HD0YnB1XnhXp88W5Rr90qj9y7XldlcDtQzg=",
+    "role_id": 903,
+    "user_name": "q1",
+    "area_id": 1,
+    "channel": "dev",
+    "platform": "windows"
+  },
+  {
+    "cmd": "print",
+    "message": "直接登录测试完成"
+  }
+]
