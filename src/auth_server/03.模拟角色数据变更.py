@@ -33,7 +33,7 @@ def main():
     print("=== 📊 角色数据变更模拟工具 ===")
     print("📝 可用命令:")
     print("  status - 📊 发送角色状态变更通知")
-    print("  quit   - 🚪 退出程序")
+    print("  quit   - 🚪 退出程序 (可输入 quit/q/0)")
     print()
     
     current_module = sys.modules[__name__]

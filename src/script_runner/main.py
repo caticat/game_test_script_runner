@@ -4,7 +4,7 @@ import sys
 import os
 import asyncio
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 def show_main_menu():
     """显示主菜单"""
@@ -16,7 +16,7 @@ def show_main_menu():
     print("  2. quick_runner   - ⚡ 快速运行器 (运行示例脚本)")
     print("  3. examples       - 📁 查看示例脚本")
     print("  4. help           - 📚 查看帮助")
-    print("  0. quit           - 🚪 退出")
+    print("  0. quit           - 🚪 退出 (可输入 0/q/quit)")
     print("=" * 50)
 
 def show_examples():
@@ -90,7 +90,7 @@ async def main():
         try:
             choice = input("请选择操作: ").strip()
             
-            if choice == "0" or choice.lower() == "quit":
+            if choice == "0" or choice.lower() == "quit" or choice.lower() == "q":
                 print("👋 再见!")
                 break
             

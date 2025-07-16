@@ -26,6 +26,8 @@ class BaseTCPClient:
         
         # 添加默认命令
         self.command_handlers["quit"] = self._quit_command
+        self.command_handlers["q"] = self._quit_command
+        self.command_handlers["0"] = self._quit_command
         
         # 设置Proto路径
         self._setup_proto_path()

@@ -9,11 +9,11 @@ from typing import Dict, List, Any, Optional, Callable
 from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from utils.utils import Utils
 from utils.config_manager import config_manager
-from commands import CommandManager
+from .commands import CommandManager
 
 # 动态获取proto路径并添加到sys.path
 proto_path = config_manager.get_proto_path()

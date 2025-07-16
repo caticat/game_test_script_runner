@@ -195,7 +195,7 @@ if __name__ == "__main__":
         client.connect()
         while client.running.is_set():
             msg = input("Enter message: ")
-            if msg.strip().lower() == "quit":
+            if msg.strip().lower() in ["quit", "q", "0"]:
                 break
 
             buff = b''

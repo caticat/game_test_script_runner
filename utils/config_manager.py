@@ -60,13 +60,37 @@ class ConfigManager:
     
     def get_proto_path(self) -> str:
         """获取Proto文件路径"""
+        # 优先使用新的路径配置
+        paths = self._config.get("paths", {})
+        proto_path = paths.get("proto_path")
+        if proto_path:
+            return proto_path
+        
+        # 向后兼容旧配置
         return self._config.get("proto_path", 
                                os.getenv("PROTO_PYTHON_PATH", "Q:/kof/dev/proto_python"))
     
     def get_scripts_path(self) -> str:
         """获取脚本文件夹路径"""
+        # 优先使用新的路径配置
+        paths = self._config.get("paths", {})
+        scripts_path = paths.get("scripts_path")
+        if scripts_path:
+            return scripts_path
+        
+        # 向后兼容旧配置
         return self._config.get("scripts_path", 
                                os.getenv("SCRIPTS_PATH", "scripts"))
+    
+    def get_tests_path(self) -> str:
+        """获取测试文件夹路径"""
+        paths = self._config.get("paths", {})
+        return paths.get("tests_path", "tests")
+    
+    def get_docs_path(self) -> str:
+        """获取文档文件夹路径"""
+        paths = self._config.get("paths", {})
+        return paths.get("docs_path", "docs")
     
     def reload_config(self):
         """重新加载配置"""

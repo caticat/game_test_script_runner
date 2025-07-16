@@ -8,12 +8,42 @@
 
 ```
 896.协议测试工具/
-├── 01.登录服/                    # 登录服务器测试脚本
-│   ├── 01.auth.py                # HTTP认证测试
-│   ├── 02.封禁账号.py            # 账号封禁管理
-│   └── 03.模拟角色数据变更.py     # 角色数据变更测试
-├── 03.游戏服/                    # 游戏服务器测试脚本
-│   └── 01.game.py                # 游戏服登录测试
+├── src/                          # 源代码目录
+│   ├── auth_server/              # 认证服务器测试
+│   │   ├── 01.http_auth.py       # HTTP认证测试
+│   │   ├── 02.封禁账号.py        # 账号封禁管理
+│   │   └── 03.模拟角色数据变更.py # 角色数据变更测试
+│   ├── gateway/                  # 网关服务器测试
+│   │   └── 01.登录.py            # 网关登录测试
+│   ├── game_server/              # 游戏服务器测试
+│   │   └── [预留]                # 游戏服相关测试
+│   └── script_runner/            # 脚本运行器
+│       ├── main.py               # 主程序
+│       ├── quick_runner.py       # 快速运行器
+│       ├── script_editor.py      # 脚本编辑器
+│       ├── script_executor.py    # 脚本执行器
+│       └── commands/             # 命令实现
+│           ├── __init__.py
+│           ├── base.py           # 基础命令类
+│           ├── login.py          # 登录命令
+│           ├── send.py           # 发送命令
+│           ├── wait.py           # 等待命令
+│           └── assert_cmd.py     # 断言命令
+├── scripts/                      # 测试脚本
+│   ├── async_demo.json
+│   ├── auth_only.json
+│   ├── auto_params.json
+│   ├── batch_test.json
+│   ├── direct_login.json
+│   └── login_flow.json
+├── tests/                        # 测试文件
+│   ├── run_tests.py
+│   ├── test_async_simple.py
+│   ├── test_auto_params.py
+│   ├── test_forced_sync.py
+│   ├── test_new_command.py
+│   ├── test_script.py
+│   └── test_wait_logic.py
 ├── config/                       # 配置文件
 │   └── config.yml                # 服务器配置
 ├── utils/                        # 工具库
@@ -21,15 +51,14 @@
 │   ├── config_manager.py         # 配置管理器
 │   ├── tcp_client.py             # TCP客户端
 │   ├── protocol_codec.py         # 协议编解码器
-│   ├── formatters.py             # 格式化和文本解码工具
-│   ├── http_client.py            # HTTP客户端
+│   ├── utils.py                  # 通用工具
 │   └── __init__.py               # 包初始化文件
-├── test/                         # 测试文件
-│   ├── test_auto_register.py     # 自动注册测试
-│   ├── test_refactor.py          # 重构测试
-│   └── test_game_auto_register.py # 游戏服自动注册测试
 ├── tools/                        # 构建工具
 │   └── gen_proto.sh              # Proto文件生成脚本
+├── docs/                         # 项目文档
+│   ├── project_structure.md      # 项目结构说明
+│   ├── refactor_modernization.md # 重构现代化说明
+│   └── exit_command_unification.md # 退出命令统一说明
 ├── launcher.py                   # 项目启动器
 ├── requirements.txt              # Python依赖
 └── README.md                     # 项目文档
@@ -37,17 +66,31 @@
 
 ## 🔧 重构说明
 
-### 文件重构对比
+### 主要重构内容
 
-| 旧文件名 | 新文件名 | 说明 |
-|---------|---------|-----|
-| `print_dict.py` | `formatters.py` | 合并格式化相关功能 |
-| `decode_dict.py` | `formatters.py` | 合并到格式化模块 |
-| `login_poster.py` | `http_client.py` | 重构为通用HTTP客户端 |
-| `proto_encode.py` | `protocol_codec.py` | 更符合命名规范 |
-| `time_helper.py` | `time_utils.py` | 更符合命名规范 |
+1. **目录结构重组**
+   - 将测试脚本按功能分类到 `src/` 目录
+   - 创建 `scripts/` 目录存放测试脚本
+   - 统一测试文件到 `tests/` 目录
+   - 添加 `docs/` 目录存放项目文档
 
-### 重构后的结构
+2. **模块化改进**
+   - 脚本运行器模块化，分离命令实现
+   - 使用配置驱动的路径管理
+   - 动态命令发现和加载机制
+
+3. **用户体验优化**
+   - 统一所有退出命令：支持 `0`、`q`、`quit`
+   - 改进菜单显示和交互提示
+   - 优化错误处理和异常管理
+
+### 现代化特点
+
+1. **配置驱动**：使用结构化配置文件管理路径和设置
+2. **动态发现**：自动发现和注册命令及处理器
+3. **模块化设计**：清晰的模块边界和职责分离
+4. **用户友好**：统一的交互界面和退出机制
+5. **文档完整**：详细的项目文档和使用说明
 
 | 模块 | 功能 | 说明 |
 |-------|-------|-----|
@@ -98,16 +141,19 @@ python launcher.py
 
 ```bash
 # HTTP认证测试
-python 01.登录服/01.auth.py
+python src/auth_server/01.http_auth.py
 
 # 账号封禁管理
-python 01.登录服/02.封禁账号.py
+python src/auth_server/02.封禁账号.py
 
 # 角色数据变更
-python 01.登录服/03.模拟角色数据变更.py
+python src/auth_server/03.模拟角色数据变更.py
 
-# 游戏服测试
-python 03.游戏服/01.game.py
+# 网关登录测试
+python src/gateway/01.登录.py
+
+# 脚本运行器
+python src/script_runner/main.py
 ```
 
 ## ️ 开发指南

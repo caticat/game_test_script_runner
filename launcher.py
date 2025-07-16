@@ -13,27 +13,27 @@ class TestToolLauncher:
         self.tools = {
             "1": {
                 "name": "HTTP认证测试",
-                "file": "01.登录服/01.auth.py",
+                "file": "src/auth_server/01.http_auth.py",
                 "description": "测试HTTP登录认证和选服功能"
             },
             "2": {
                 "name": "账号封禁管理",
-                "file": "01.登录服/02.封禁账号.py",
+                "file": "src/auth_server/02.封禁账号.py",
                 "description": "管理账号封禁/解封功能"
             },
             "3": {
                 "name": "角色数据变更",
-                "file": "01.登录服/03.模拟角色数据变更.py",
+                "file": "src/auth_server/03.模拟角色数据变更.py",
                 "description": "模拟角色数据变更通知"
             },
             "4": {
                 "name": "登录测试",
-                "file": "02.网关/01.登录.py",
+                "file": "src/gateway/01.登录.py",
                 "description": "游戏服TCP连接和登录测试"
             },
             "5": {
                 "name": "模拟脚本工具",
-                "file": "11.模拟脚本/main.py",
+                "file": "src/script_runner/main.py",
                 "description": "按顺序执行测试命令，支持参数引用和异步等待"
             }
         }
@@ -50,7 +50,7 @@ class TestToolLauncher:
             print(f"   {tool['description']}")
             print()
         
-        print("0. 退出")
+        print("0. 退出 (可输入 0/q/quit)")
         print("=" * 50)
     
     def run_tool(self, tool_key: str):
@@ -88,8 +88,8 @@ class TestToolLauncher:
             try:
                 choice = input("请选择要运行的工具 (0-5): ").strip()
                 
-                if choice == "0":
-                    print("再见！")
+                if choice == "0" or choice.lower() == "q" or choice.lower() == "quit":
+                    print("👋 再见！")
                     break
                 elif choice in self.tools:
                     self.run_tool(choice)

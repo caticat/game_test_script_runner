@@ -6,10 +6,19 @@ gate:
   host: "127.0.0.1"
   port: 5001
 
-# Proto文件路径配置
-proto_path: "Q:/kof/dev/proto_python"
+# 路径配置
+paths:
+  # Proto文件路径配置
+  proto_path: "Q:/kof/dev/proto_python"
+  # 脚本文件夹路径配置
+  scripts_path: "scripts"
+  # 测试文件夹路径配置
+  tests_path: "tests"
+  # 文档文件夹路径配置
+  docs_path: "docs"
 
-# 脚本文件夹路径配置
+# 向后兼容的配置 (将逐步移除)
+proto_path: "Q:/kof/dev/proto_python"
 scripts_path: "scripts"
 
 # 数据库配置（如果需要）

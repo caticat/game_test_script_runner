@@ -6,9 +6,9 @@ import asyncio
 import json
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from script_executor import ScriptExecutor
+from .script_executor import ScriptExecutor
 from utils.config_manager import config_manager
 
 class QuickRunner:
@@ -16,7 +16,9 @@ class QuickRunner:
     
     def __init__(self):
         scripts_path = config_manager.get_scripts_path()
-        self.examples_dir = Path(__file__).parent / scripts_path
+        # 脚本目录相对于项目根目录
+        project_root = Path(__file__).parent.parent.parent
+        self.examples_dir = project_root / scripts_path
         self.executor = ScriptExecutor()
     
     def list_examples(self):
@@ -98,13 +100,13 @@ class QuickRunner:
         print("\n🔧 操作:")
         print("  - 输入数字选择并运行脚本")
         print("  - 输入 'v数字' 查看脚本内容 (如: v1)")
-        print("  - 输入 'q' 退出")
+        print("  - 输入 '0' 退出 (可输入 0/q/quit)")
         
         while True:
             try:
                 choice = input("\n请选择: ").strip()
                 
-                if choice.lower() == 'q':
+                if choice == "0" or choice.lower() == 'q' or choice.lower() == 'quit':
                     print("👋 再见!")
                     break
                 

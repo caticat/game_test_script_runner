@@ -67,7 +67,7 @@ def main():
     print("=== 游戏服测试工具 ===")
     print("可用命令:")
     print("  login - 游戏服登录")
-    print("  quit  - 退出程序")
+    print("  quit  - 退出程序 (可输入 quit/q/0)")
     print()
     
     # 使用基础TCP客户端
