@@ -96,13 +96,19 @@ async def main():
             
             elif choice == "1" or choice.lower() == "script_editor":
                 print("🚀 启动脚本编辑器...")
-                from script_editor import ScriptEditor
+                try:
+                    from script_editor import ScriptEditor
+                except ImportError:
+                    from .script_editor import ScriptEditor
                 editor = ScriptEditor()
                 await editor.run()
             
             elif choice == "2" or choice.lower() == "quick_runner":
                 print("🚀 启动快速运行器...")
-                from quick_runner import QuickRunner
+                try:
+                    from quick_runner import QuickRunner
+                except ImportError:
+                    from .quick_runner import QuickRunner
                 runner = QuickRunner()
                 await runner.run_interactive()
             

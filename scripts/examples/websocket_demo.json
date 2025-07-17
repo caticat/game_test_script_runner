@@ -1,0 +1,17 @@
+[
+  {
+    "cmd": "print",
+    "message": "开始WebSocket功能测试",
+    "comment": "开始测试"
+  },
+  {
+    "cmd": "connect_gate",
+    "host": "wss://echo.websocket.org",
+    "comment": "连接到公共WebSocket测试服务器"
+  },
+  {
+    "cmd": "print",
+    "message": "WebSocket连接状态: ret[\"connect_gate\"][\"connected\"]",
+    "comment": "显示连接状态"
+  }
+]

@@ -13,7 +13,12 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 
 from utils.utils import Utils
 from utils.config_manager import config_manager
-from .commands import CommandManager
+
+# 尝试相对导入，如果失败则使用绝对导入
+try:
+    from .commands import CommandManager
+except ImportError:
+    from commands import CommandManager
 
 # 动态获取proto路径并添加到sys.path
 proto_path = config_manager.get_proto_path()
@@ -222,11 +227,38 @@ class ScriptExecutor:
 
     def close(self):
         """关闭连接"""
-        if self.current_client:
-            self.current_client.stop()
-            self.current_client = None
+        print("🔧 开始清理资源...")
         
-        self.executor.shutdown(wait=True)
+        if self.current_client:
+            try:
+                print("🔧 正在关闭客户端连接...")
+                
+                # 停止客户端（让客户端自己处理清理逻辑）
+                self.current_client.stop()
+                self.current_client = None
+                print("✅ 客户端连接已关闭")
+                
+            except Exception as e:
+                print(f"⚠️ 关闭客户端连接时出错: {e}")
+        
+        # 关闭线程池
+        try:
+            print("🔧 正在关闭线程池...")
+            self.executor.shutdown(wait=False)  # 不等待任务完成，立即关闭
+            print("✅ 线程池已关闭")
+        except Exception as e:
+            print(f"⚠️ 关闭线程池时出错: {e}")
+        
+        # 清理等待命令
+        try:
+            for cmd, event in self.waiting_commands.items():
+                event.set()  # 设置所有等待事件
+            self.waiting_commands.clear()
+            print("✅ 等待命令已清理")
+        except Exception as e:
+            print(f"⚠️ 清理等待命令时出错: {e}")
+        
+        print("✅ 资源清理完成")
     
     def _load_script_file(self, file_path: str, base_dir: str = None) -> List[Dict[str, Any]]:
         """加载脚本文件"""

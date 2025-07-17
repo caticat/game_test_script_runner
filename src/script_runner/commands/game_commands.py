@@ -4,6 +4,7 @@
 from typing import Dict, Any
 from .base_command import BaseCommand
 from utils.protocol_codec import Codec
+from utils.debug_utils import debug_print
 import sys
 import os
 
@@ -61,18 +62,23 @@ class LoginCommand(BaseCommand):
             from proto_id_pb2 import ProtoId
             login_id = ProtoId.C2G_Login
         except ImportError:
-            print("⚠️  无法导入协议ID，使用默认值")
+            debug_print("⚠️  无法导入协议ID，使用默认值")
             login_id = 1  # 默认登录协议ID
         
         # 构建登录数据包
         buff = self._build_login_packet(role_id, user_name, signature, area_id, channel, platform)
         
+        debug_print(f"🔧 [Login] 构建登录数据包: 长度={len(buff)} bytes")
+        debug_print(f"🔧 [Login] 数据包头部: {buff[:20].hex()}")
+        
         # 注册登录应答处理器
         self.current_client.regist_handler(login_id, self._login_ack_handler)
         
+        debug_print(f"🔧 [Login] 注册处理器: proto_id={login_id}")
+        
         # 发送登录请求
         self.current_client.send(login_id, buff)
-        print(f"📤 发送登录请求: role_id={role_id}, user_name={user_name}")
+        print(f"📤 发送登录请求: proto_id={login_id}, role_id={role_id}, user_name={user_name}")
         
         # 不返回临时结果，等待登录应答处理器设置真正的结果
         return None

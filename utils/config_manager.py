@@ -60,27 +60,15 @@ class ConfigManager:
     
     def get_proto_path(self) -> str:
         """获取Proto文件路径"""
-        # 优先使用新的路径配置
         paths = self._config.get("paths", {})
-        proto_path = paths.get("proto_path")
-        if proto_path:
-            return proto_path
-        
-        # 向后兼容旧配置
-        return self._config.get("proto_path", 
-                               os.getenv("PROTO_PYTHON_PATH", "Q:/kof/dev/proto_python"))
+        return paths.get("proto_path", 
+                        os.getenv("PROTO_PYTHON_PATH", "Q:/kof/dev/proto_python"))
     
     def get_scripts_path(self) -> str:
         """获取脚本文件夹路径"""
-        # 优先使用新的路径配置
         paths = self._config.get("paths", {})
-        scripts_path = paths.get("scripts_path")
-        if scripts_path:
-            return scripts_path
-        
-        # 向后兼容旧配置
-        return self._config.get("scripts_path", 
-                               os.getenv("SCRIPTS_PATH", "scripts"))
+        return paths.get("scripts_path", 
+                        os.getenv("SCRIPTS_PATH", "scripts"))
     
     def get_tests_path(self) -> str:
         """获取测试文件夹路径"""
@@ -91,6 +79,23 @@ class ConfigManager:
         """获取文档文件夹路径"""
         paths = self._config.get("paths", {})
         return paths.get("docs_path", "docs")
+    
+    def is_debug_enabled(self) -> bool:
+        """获取调试模式状态（实时读取配置文件）"""
+        # 每次调用时重新读取配置文件，确保实时生效
+        config_path = os.path.join(os.path.dirname(__file__), "../config/config.yml")
+        try:
+            with open(config_path, "r", encoding="utf-8") as file:
+                config = yaml.safe_load(file)
+                debug = config.get("debug", {})
+                return debug.get("enabled", False)
+        except:
+            return False
+    
+    def is_packet_details_enabled(self) -> bool:
+        """获取数据包详情显示状态"""
+        debug = self._config.get("debug", {})
+        return debug.get("show_packet_details", False)
     
     def reload_config(self):
         """重新加载配置"""

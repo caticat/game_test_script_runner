@@ -15,12 +15,12 @@ src/script_runner/commands/
 ├── game_commands.py           # 基础命令：login
 ├── network_commands.py        # 基础命令：connect_gate, connect_login
 ├── utility_commands.py        # 基础命令：print, sleep
-└── abc/                       # 子文件夹
+└── custom/                    # 自定义子文件夹示例
     ├── __init__.py
-    ├── d.py                   # 命令：abc.def_gh, abc.another_test
-    └── nested/                # 嵌套子文件夹
+    ├── special_commands.py    # 命令：custom.special_test
+    └── advanced/              # 嵌套子文件夹示例
         ├── __init__.py
-        └── test.py            # 命令：abc.nested.deep_test
+        └── features.py        # 命令：custom.advanced.feature_test
 ```
 
 ## 🔧 命令命名规则
@@ -31,14 +31,14 @@ src/script_runner/commands/
 - **命令名**：`auth`
 
 ### 2. 一级子目录命令
-- **文件**：`abc/d.py`
-- **类**：`DefGhCommand`
-- **命令名**：`abc.def_gh`
+- **文件**：`custom/special_commands.py`
+- **类**：`SpecialTestCommand`
+- **命令名**：`custom.special_test`
 
 ### 3. 多级嵌套命令
-- **文件**：`abc/nested/test.py`
-- **类**：`DeepTestCommand`
-- **命令名**：`abc.nested.deep_test`
+- **文件**：`custom/advanced/features.py`
+- **类**：`FeatureTestCommand`
+- **命令名**：`custom.advanced.feature_test`
 
 ## 💡 实现原理
 
@@ -70,14 +70,14 @@ command_name = f"{prefix}.{base_command_name}"
 
 ### 1. 创建命令类
 ```python
-# abc/d.py
+# custom/special_commands.py
 from ..base_command import BaseCommand
 
-class DefGhCommand(BaseCommand):
-    """DefGh测试命令"""
+class SpecialTestCommand(BaseCommand):
+    """特殊测试命令"""
     
     def execute(self, message: str = "Hello!") -> Dict[str, Any]:
-        print(f"🎯 DefGh命令执行: {message}")
+        print(f"🎯 特殊测试命令执行: {message}")
         return {"success": True, "message": message}
 ```
 
@@ -85,14 +85,13 @@ class DefGhCommand(BaseCommand):
 ```json
 [
   {
-    "cmd": "abc.def_gh",
+    "cmd": "custom.special_test",
     "message": "来自脚本的测试消息",
-    "comment": "测试递归命令：abc.def_gh"
+    "comment": "测试递归命令：custom.special_test"
   },
   {
-    "cmd": "abc.nested.deep_test",
-    "depth": 4,
-    "name": "深度嵌套测试",
+    "cmd": "custom.advanced.feature_test",
+    "feature": "高级功能测试",
     "comment": "测试深度嵌套命令"
   }
 ]
@@ -101,13 +100,12 @@ class DefGhCommand(BaseCommand):
 ### 3. 查看可用命令
 运行脚本运行器后，可以查看所有可用命令：
 ```
-📋 发现了 10 个命令:
-  • abc.another_test          - 另一个测试命令
-  • abc.def_gh                - DefGh测试命令
-  • abc.nested.deep_test      - 深度嵌套测试命令
+📋 发现了 8 个命令:
   • auth                      - HTTP认证命令
   • connect_gate              - 连接网关命令
   • connect_login             - 连接登录服命令
+  • custom.special_test       - 特殊测试命令
+  • custom.advanced.feature_test - 高级功能测试命令
   • login                     - 游戏服登录命令
   • print                     - 打印命令
   • select_area               - 选择区服命令

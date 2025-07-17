@@ -5,11 +5,11 @@
     "comment": "显示标题"
   },
   {
-    "include": "modules/full_login.json",
+    "include": "../modules/full_login.json",
     "comment": "包含完整登录流程（该文件内部还会包含其他文件）"
   },
   {
-    "include": "modules/post_login.json",
+    "include": "../modules/post_login.json",
     "comment": "包含后处理模块"
   }
 ]

@@ -1,0 +1,19 @@
+[
+    {
+        "cmd": "ori.auth",
+        "user_name": "q1",
+        "channel": "dev",
+        "area_id": 1,
+        "comment": "原始HTTP认证"
+    },
+    {
+        "cmd": "connect_gate",
+        "host": "ws://127.0.0.1:5002/gateway",
+        "comment": "连接到网关 - 使用认证返回的网关地址"
+    },
+    {
+        "cmd": "login",
+        "user_name": "ret[\"select_area\"][\"OpenId\"]",
+        "comment": "发送登录请求到游戏服"
+    }
+]

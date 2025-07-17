@@ -4,6 +4,7 @@ HTTP认证相关命令
 from typing import Dict, Any
 from .base_command import BaseCommand
 from utils.utils import Utils
+from utils.debug_utils import debug_print
 
 class AuthCommand(BaseCommand):
     """HTTP认证命令"""
@@ -19,12 +20,15 @@ class AuthCommand(BaseCommand):
         Returns:
             Dict[str, Any]: 认证结果
         """
+        debug_print(f"🔧 [Auth] 开始HTTP认证: user_name={user_name}, channel={channel}")
+        
         payload = {
             "Channel": channel,
             "Code": user_name,
         }
         result = Utils.send_to_login("auth_step", payload)
         self.complete_command("auth", result)
+        debug_print(f"✅ [Auth] HTTP认证结果: {result}")
         return result
 
 class SelectAreaCommand(BaseCommand):
@@ -40,8 +44,10 @@ class SelectAreaCommand(BaseCommand):
             login_token: 登录令牌
             
         Returns:
-            Dict[str, Any]: 选服结果
+            Dict[str, Any]: 选择区服结果
         """
+        debug_print(f"🔧 [SelectArea] 开始选择区服: open_id={open_id}, area_id={area_id}")
+        
         payload = {
             "OpenId": open_id,
             "AreaId": area_id,
@@ -49,4 +55,5 @@ class SelectAreaCommand(BaseCommand):
         }
         result = Utils.send_to_login("select_area", payload)
         self.complete_command("select_area", result)
+        debug_print(f"✅ [SelectArea] 选择区服结果: {result}")
         return result

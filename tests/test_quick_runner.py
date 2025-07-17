@@ -2,7 +2,11 @@
 """
 测试快速运行器功能
 """
+import sys
+import os
 import asyncio
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src', 'script_runner'))
+
 from quick_runner import QuickRunner
 
 async def test_quick_runner():

@@ -1,0 +1,22 @@
+[
+  {
+    "cmd": "print",
+    "message": "测试不同的WebSocket连接方式",
+    "comment": "开始测试"
+  },
+  {
+    "cmd": "connect_gate",
+    "host": "ws://127.0.0.1:5001",
+    "comment": "测试本地非加密WebSocket连接"
+  },
+  {
+    "cmd": "print",
+    "message": "本地WebSocket连接结果: ret[\"connect_gate\"][\"connected\"]",
+    "comment": "显示连接状态"
+  },
+  {
+    "cmd": "print",
+    "message": "如果连接失败，错误信息: ret[\"connect_gate\"][\"error\"]",
+    "comment": "显示错误信息"
+  }
+]

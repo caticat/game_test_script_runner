@@ -5,7 +5,7 @@
     "comment": "显示开始信息"
   },
   {
-    "include": "modules/auth_module.json",
+    "include": "../modules/auth_module.json",
     "comment": "包含认证模块"
   },
   {
@@ -15,8 +15,8 @@
   },
   {
     "include": [
-      "modules/login_module.json",
-      "modules/post_login.json"
+      "../modules/login_module.json",
+      "../modules/post_login.json"
     ],
     "comment": "包含登录和后处理模块"
   },

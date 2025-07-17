@@ -2,6 +2,10 @@
 """
 简单测试script_editor的现代化功能
 """
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src', 'script_runner'))
+
 from script_editor import ScriptEditor
 
 def test_script_editor():

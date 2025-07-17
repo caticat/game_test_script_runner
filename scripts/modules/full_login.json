@@ -1,10 +1,10 @@
 [
   {
-    "include": "modules/auth_module.json",
+    "include": "../modules/auth_module.json",
     "comment": "包含认证模块"
   },
   {
-    "include": "modules/login_module.json",
+    "include": "../modules/login_module.json",
     "comment": "包含登录模块"
   }
 ]
