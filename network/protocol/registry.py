@@ -1,6 +1,7 @@
 # 协议自动注册工具模块
 
 import inspect
+from utils.debug_utils import debug_print
 from typing import Any, Callable, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -29,12 +30,12 @@ def auto_register_handlers(client: 'SocketClient', current_module: Any) -> int:
             proto_id = getattr(current_module, id_var_name, None)
             if proto_id is not None:
                 client.regist_handler(proto_id, obj)
-                print(f"🔧 自动注册协议处理函数: {id_var_name}={proto_id} -> {name}")
+                debug_print(f"🔧 自动注册协议处理函数: {id_var_name}={proto_id} -> {name}")
                 registered_count += 1
             else:
                 print(f"⚠️ 未找到变量 {id_var_name}，无法注册 {name}")
     
-    print(f"✅ 已自动注册 {registered_count} 个协议处理函数")
+    debug_print(f"✅ 已自动注册 {registered_count} 个协议处理函数")
     return registered_count
 
 
@@ -57,7 +58,7 @@ def auto_register_commands_and_handlers(client: 'SocketClient', current_module: 
         if name.endswith('_req'):
             # 注册请求命令（预留功能）
             key = name[:-4]  # 去掉 '_req' 后缀
-            print(f"🔧 发现命令函数: {name} (key: {key})")
+            debug_print(f"🔧 发现命令函数: {name} (key: {key})")
             command_count += 1
         elif name.endswith('_ack'):
             # 注册应答处理器
@@ -66,10 +67,10 @@ def auto_register_commands_and_handlers(client: 'SocketClient', current_module: 
             proto_id = getattr(current_module, id_var_name, None)
             if proto_id is not None:
                 client.regist_handler(proto_id, obj)
-                print(f"🔧 自动注册协议处理函数: {id_var_name}={proto_id} -> {name}")
+                debug_print(f"🔧 自动注册协议处理函数: {id_var_name}={proto_id} -> {name}")
                 handler_count += 1
             else:
                 print(f"⚠️ 未找到变量 {id_var_name}，无法注册 {name}")
     
-    print(f"✅ 已自动注册 {command_count} 个命令函数和 {handler_count} 个协议处理函数")
+    debug_print(f"✅ 已自动注册 {command_count} 个命令函数和 {handler_count} 个协议处理函数")
     return command_count, handler_count

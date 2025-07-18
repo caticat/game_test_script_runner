@@ -19,7 +19,7 @@ paths:
 
 # 调试配置
 debug:
-  enabled: true # 是否启用调试模式
+  enabled: false # 是否启用调试模式
   show_packet_details: false # 是否显示数据包详细信息
 
 # 数据库配置（如果需要）
