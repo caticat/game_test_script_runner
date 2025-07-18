@@ -119,7 +119,7 @@ class ScriptExecutor:
         print("🚀 开始执行脚本...")
         
         # 处理include指令，展开包含的文件
-        expanded_scripts = self._process_includes(scripts, self.script_base_dir)
+        expanded_scripts = self._process_includes(scripts, None)  # 使用默认的scripts根目录
         
         print(f"📋 共有 {len(expanded_scripts)} 个命令（包含文件展开后）")
         print("=" * 50)
@@ -248,25 +248,53 @@ class ScriptExecutor:
         
         print("✅ 资源清理完成")
     
-    def _load_script_file(self, file_path: str, base_dir: str = None) -> List[Dict[str, Any]]:
-        """加载脚本文件"""
+    def _load_script_file(self, file_path: str, scripts_root_dir: str = None) -> List[Dict[str, Any]]:
+        """加载脚本文件
+        
+        Args:
+            file_path: 脚本文件路径，应该是相对于scripts_path的路径
+            scripts_root_dir: 脚本根目录，如果为None则从配置获取
+        """
         import json
         import os
         
-        # 如果是相对路径，则相对于base_dir或当前脚本文件目录
-        if not os.path.isabs(file_path):
-            if base_dir:
-                file_path = os.path.join(base_dir, file_path)
-            else:
-                # 获取当前脚本文件的目录
-                current_dir = os.path.dirname(os.path.abspath(__file__))
-                file_path = os.path.join(current_dir, file_path)
+        # 获取脚本根目录
+        if scripts_root_dir is None:
+            scripts_path = config_manager.get_scripts_path()
+            # 获取项目根目录
+            project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            scripts_root_dir = os.path.join(project_root, scripts_path)
+        
+        # 禁止使用相对路径如../xxx，确保安全性
+        if file_path.startswith('../') or file_path.startswith('..\\'):
+            print(f"❌ 禁止使用相对路径: {file_path}")
+            print(f"💡 请使用相对于scripts目录的路径，如: modules/auth_module.json")
+            return []
+        
+        # 如果是绝对路径，检查是否在scripts目录内
+        if os.path.isabs(file_path):
+            # 检查是否在scripts目录范围内
+            try:
+                common_path = os.path.commonpath([scripts_root_dir, file_path])
+                if common_path != scripts_root_dir:
+                    print(f"❌ 脚本文件必须在scripts目录内: {file_path}")
+                    return []
+            except ValueError:
+                print(f"❌ 脚本文件路径无效: {file_path}")
+                return []
+        else:
+            # 相对路径，基于scripts_root_dir解析
+            file_path = os.path.join(scripts_root_dir, file_path)
+        
+        # 规范化路径
+        file_path = os.path.normpath(file_path)
         
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 return json.load(f)
         except FileNotFoundError:
             print(f"❌ 脚本文件未找到: {file_path}")
+            print(f"💡 当前scripts根目录: {scripts_root_dir}")
             return []
         except json.JSONDecodeError as e:
             print(f"❌ 脚本文件格式错误: {file_path}, 错误: {e}")
@@ -275,8 +303,22 @@ class ScriptExecutor:
             print(f"❌ 加载脚本文件失败: {file_path}, 错误: {e}")
             return []
 
-    def _process_includes(self, scripts: List[Dict[str, Any]], base_dir: str = None) -> List[Dict[str, Any]]:
-        """处理include指令，展开包含的文件"""
+    def _process_includes(self, scripts: List[Dict[str, Any]], scripts_root_dir: str = None) -> List[Dict[str, Any]]:
+        """处理include指令，展开包含的文件
+        
+        Args:
+            scripts: 脚本列表
+            scripts_root_dir: 脚本根目录，如果为None则从配置获取
+        """
+        import os
+        
+        # 获取脚本根目录
+        if scripts_root_dir is None:
+            scripts_path = config_manager.get_scripts_path()
+            # 获取项目根目录
+            project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            scripts_root_dir = os.path.join(project_root, scripts_path)
+        
         expanded_scripts = []
         
         for script_dict in scripts:
@@ -296,10 +338,10 @@ class ScriptExecutor:
                 # 递归加载并处理每个包含的文件
                 for include_file in include_files:
                     print(f"🔄 正在加载: {include_file}")
-                    included_scripts = self._load_script_file(include_file, base_dir)
+                    included_scripts = self._load_script_file(include_file, scripts_root_dir)
                     if included_scripts:
-                        # 递归处理包含文件中的include，使用相同的base_dir
-                        processed_scripts = self._process_includes(included_scripts, base_dir)
+                        # 递归处理包含文件中的include，使用相同的scripts_root_dir
+                        processed_scripts = self._process_includes(included_scripts, scripts_root_dir)
                         expanded_scripts.extend(processed_scripts)
                         print(f"✅ 已包含 {len(processed_scripts)} 个命令从 {include_file}")
                     else:
@@ -313,12 +355,12 @@ class ScriptExecutor:
         return expanded_scripts
 
     def set_script_base_dir(self, script_file_path: str = None):
-        """设置脚本文件的基准目录"""
-        import os
-        if script_file_path:
-            self.script_base_dir = os.path.dirname(os.path.abspath(script_file_path))
-        else:
-            self.script_base_dir = None
+        """设置脚本文件的基准目录（已废弃，保留用于兼容性）
+        
+        现在所有include路径都基于配置的scripts_path，不再需要设置基准目录
+        """
+        # 保留方法用于向后兼容，但不再使用
+        pass
 
 # 使用示例
 async def main():

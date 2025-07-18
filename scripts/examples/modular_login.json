@@ -1,9 +1,9 @@
 [
   {
     "include": [
-      "../modules/auth_module.json",
-      "../modules/login_module.json",
-      "../modules/post_login.json"
+      "modules/auth_module.json",
+      "modules/login_module.json",
+      "modules/post_login.json"
     ],
     "comment": "包含完整的登录流程模块"
   }
