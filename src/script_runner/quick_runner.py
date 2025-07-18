@@ -87,7 +87,7 @@ class QuickRunner:
         except Exception as e:
             print(f"❌ 运行脚本失败: {e}")
         finally:
-            self.executor.close()
+            await self.executor.close()
     
     async def run_interactive(self):
         """交互式运行"""
@@ -169,7 +169,7 @@ class QuickRunner:
         finally:
             # 确保退出时清理所有连接
             print("🔧 正在清理连接...")
-            self.executor.close()
+            await self.executor.close()
 
 def main():
     """主函数"""
@@ -181,7 +181,7 @@ def main():
         try:
             # 尝试创建一个runner实例来清理
             runner = QuickRunner()
-            runner.executor.close()
+            asyncio.run(runner.executor.close())
         except:
             pass
         print("👋 程序已退出")
@@ -204,14 +204,14 @@ def main():
     except KeyboardInterrupt:
         print("\n🔧 程序被中断，正在清理...")
         try:
-            runner.executor.close()
+            asyncio.run(runner.executor.close())
         except:
             pass
         print("👋 程序已退出")
     except Exception as e:
         print(f"❌ 程序执行出错: {e}")
         try:
-            runner.executor.close()
+            asyncio.run(runner.executor.close())
         except:
             pass
 

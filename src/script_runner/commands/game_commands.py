@@ -3,7 +3,7 @@
 """
 from typing import Dict, Any
 from .base_command import BaseCommand
-from utils.protocol_codec import Codec
+from network.protocol.codec import Codec
 from utils.debug_utils import debug_print
 import sys
 import os

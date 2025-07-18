@@ -3,11 +3,9 @@
 import sys
 import os
 import asyncio
-import threading
 import time
 from typing import Dict, List, Any, Optional, Callable
 from dataclasses import dataclass
-from concurrent.futures import ThreadPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
@@ -32,13 +30,12 @@ class ScriptCommand:
     timeout: int = 30  # 默认超时时间30秒
 
 class ScriptExecutor:
-    """脚本执行器"""
+    """脚本执行器 - 异步版本"""
     
     def __init__(self):
         self.results: Dict[str, Any] = {}  # 存储每个命令的返回结果
-        self.waiting_commands: Dict[str, threading.Event] = {}  # 等待命令完成的事件
+        self.waiting_commands: Dict[str, asyncio.Event] = {}  # 等待命令完成的事件
         self.current_client: Optional[Any] = None
-        self.executor = ThreadPoolExecutor(max_workers=1)
         self.script_base_dir: Optional[str] = None  # 脚本文件的基准目录
         
         # 初始化命令管理器
@@ -180,25 +177,19 @@ class ScriptExecutor:
         return self.results
     
     async def _execute_command(self, command: ScriptCommand, params: Dict[str, Any]) -> Any:
-        """执行单个命令"""
+        """执行单个命令 - 异步版本"""
         # 创建等待事件
-        event = threading.Event()
+        event = asyncio.Event()
         self.waiting_commands[command.cmd] = event
         
         try:
-            # 在线程池中执行命令
-            loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(
-                self.executor, 
-                self._execute_command_sync, 
-                command.cmd,
-                params
-            )
+            # 直接异步执行命令
+            result = await self._execute_command_async(command.cmd, params)
             
             # 等待命令完成（如果需要）
             if command.cmd in ["auth", "select_area", "login"]:
                 await asyncio.wait_for(
-                    asyncio.to_thread(event.wait),
+                    event.wait(),
                     timeout=command.timeout
                 )
             
@@ -209,9 +200,9 @@ class ScriptExecutor:
             if command.cmd in self.waiting_commands:
                 del self.waiting_commands[command.cmd]
     
-    def _execute_command_sync(self, cmd: str, params: Dict[str, Any]) -> Any:
-        """同步执行命令"""
-        return self.command_manager.execute_command(cmd, **params)
+    async def _execute_command_async(self, cmd: str, params: Dict[str, Any]) -> Any:
+        """异步执行命令"""
+        return await self.command_manager.execute_command_async(cmd, **params)
     
     def _complete_command(self, cmd: str, result: Any = None):
         """标记命令完成"""
@@ -225,32 +216,29 @@ class ScriptExecutor:
         """获取所有可用命令的列表"""
         return self.command_manager.get_available_commands()
 
-    def close(self):
-        """关闭连接"""
+    async def close(self):
+        """关闭连接 - 异步版本"""
         print("🔧 开始清理资源...")
         
         if self.current_client:
             try:
                 print("🔧 正在关闭客户端连接...")
                 
-                # 停止客户端（让客户端自己处理清理逻辑）
-                self.current_client.stop()
+                # 异步停止客户端
+                if hasattr(self.current_client, 'stop'):
+                    if asyncio.iscoroutinefunction(self.current_client.stop):
+                        await self.current_client.stop()
+                    else:
+                        self.current_client.stop()
                 self.current_client = None
                 print("✅ 客户端连接已关闭")
                 
             except Exception as e:
                 print(f"⚠️ 关闭客户端连接时出错: {e}")
         
-        # 关闭线程池
-        try:
-            print("🔧 正在关闭线程池...")
-            self.executor.shutdown(wait=False)  # 不等待任务完成，立即关闭
-            print("✅ 线程池已关闭")
-        except Exception as e:
-            print(f"⚠️ 关闭线程池时出错: {e}")
-        
         # 清理等待命令
         try:
+            print("🔧 正在清理等待命令...")
             for cmd, event in self.waiting_commands.items():
                 event.set()  # 设置所有等待事件
             self.waiting_commands.clear()
@@ -352,7 +340,7 @@ async def main():
         print("\n🎯 最终结果:")
         Utils.print_dict(results)
     finally:
-        executor.close()
+        await executor.close()
 
 if __name__ == "__main__":
     asyncio.run(main())

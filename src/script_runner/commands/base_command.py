@@ -34,6 +34,18 @@ class BaseCommand(ABC):
         """
         pass
     
+    async def execute_async(self, **kwargs) -> Dict[str, Any]:
+        """
+        异步执行命令 - 默认实现调用同步方法
+        
+        Args:
+            **kwargs: 命令参数
+            
+        Returns:
+            Dict[str, Any]: 命令执行结果
+        """
+        return self.execute(**kwargs)
+    
     @property
     def results(self) -> Dict[str, Any]:
         """获取所有命令的执行结果"""

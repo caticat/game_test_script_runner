@@ -158,6 +158,25 @@ class CommandManager:
         command = self.get_command(cmd_name)
         return command.execute(**kwargs)
     
+    async def execute_command_async(self, cmd_name: str, **kwargs):
+        """
+        异步执行命令
+        
+        Args:
+            cmd_name: 命令名称
+            **kwargs: 命令参数
+            
+        Returns:
+            Any: 命令执行结果
+        """
+        command = self.get_command(cmd_name)
+        # 检查命令是否有异步方法
+        if hasattr(command, 'execute_async'):
+            return await command.execute_async(**kwargs)
+        else:
+            # 如果没有异步方法，使用同步方法
+            return command.execute(**kwargs)
+    
     def get_available_commands(self) -> Dict[str, str]:
         """
         获取所有可用命令的列表

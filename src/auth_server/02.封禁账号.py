@@ -1,16 +1,16 @@
-# 封禁账号测试工具
+# 封禁账号测试工具 - 使用统一客户端运行器
 
 import sys
 import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from utils.base_tcp_client import BaseTCPClient
-from utils.tcp_client import SocketClient
+from network.clients.tcp_client import SocketClient
 from utils.utils import Utils
-from utils.config_manager import config_manager
+from utils.client_runner import run_client
 from google.protobuf.json_format import MessageToJson
 
 # 动态获取proto路径并添加到sys.path
+from utils.config_manager import config_manager
 proto_path = config_manager.get_proto_path()
 sys.path.append(proto_path)
 from proto_id_pb2 import ProtoId
@@ -22,7 +22,7 @@ import login_pb2
 get_id = ProtoId.A2L_GetAccountBans
 
 def get_req(client: SocketClient) -> None:
-    """获取封禁账号列表请求"""
+    """📋 获取封禁账号列表"""
     print("📋 获取封禁账号列表...")
     msg = login_pb2.GetAccountBansReq()
     msg.CurrentPage = 1
@@ -40,7 +40,7 @@ def get_ack(seq: int, payload: bytes) -> None:
 ban_id = ProtoId.A2L_BanAccounts
 
 def ban_req(client: SocketClient) -> None:
-    """封禁账号请求"""
+    """🚫 封禁账号"""
     print("🚫 执行封禁账号...")
     msg = login_pb2.BanAccountsReq()
     account = msg.Accounts.add()
@@ -61,7 +61,7 @@ def ban_ack(seq: int, payload: bytes) -> None:
 unban_id = ProtoId.A2L_UnbanAccounts
 
 def unban_req(client: SocketClient) -> None:
-    """解封账号请求"""
+    """✅ 解封账号"""
     print("✅ 执行解封账号...")
     msg = login_pb2.UnbanAccountsReq()
     account = msg.Accounts.add()
@@ -78,20 +78,10 @@ def unban_ack(seq: int, payload: bytes) -> None:
 
 # ===================== 主逻辑 =====================
 
-def main():
-    """主函数"""
-    print("=== 🔧 账号封禁管理工具 ===")
-    print("📝 可用命令:")
-    print("  get   - 📋 获取封禁账号列表")
-    print("  ban   - 🚫 封禁账号")
-    print("  unban - ✅ 解封账号")
-    print("  quit  - 🚪 退出程序 (可输入 quit/q/0)")
-    print()
-    
-    # 使用基础TCP客户端
-    current_module = sys.modules[__name__]
-    client = BaseTCPClient("login", current_module)
-    client.connect_and_run()
-
 if __name__ == "__main__":
-    main()
+    # 使用统一的客户端运行器
+    run_client(
+        module_name="账号封禁管理",
+        client_type="login",
+        title="🔧 账号封禁管理工具"
+    )
